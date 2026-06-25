@@ -11,6 +11,11 @@ export { API_BASE };
 export default function App() {
   const [activeTab, setActiveTab] = useState("analyze");
   const [modelStatus, setModelStatus] = useState(null);
+  const [analysisResults, setAnalysisResults] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('fishmark_results') || '[]');
+    } catch { return []; }
+  });
 
   useEffect(() => {
     fetch(`${API_BASE}/api/models/status`)
@@ -18,6 +23,19 @@ export default function App() {
       .then(setModelStatus)
       .catch(() => setModelStatus({ any_trained: false }));
   }, []);
+
+  function addAnalysisResult(result) {
+    setAnalysisResults(prev => {
+      const next = [result, ...prev].slice(0, 50);
+      localStorage.setItem('fishmark_results', JSON.stringify(next));
+      return next;
+    });
+  }
+
+  function clearAnalysisResults() {
+    setAnalysisResults([]);
+    localStorage.removeItem('fishmark_results');
+  }
 
   const tabs = [
     { id: "analyze", label: "URL Analyser", icon: "🔍" },
@@ -81,8 +99,8 @@ export default function App() {
 
       {/* Main content */}
       <main style={{ maxWidth: 1200, margin: "0 auto", padding: "2rem" }}>
-        {activeTab === "analyze" && <URLAnalyzer modelsReady={modelStatus?.any_trained} />}
-        {activeTab === "results" && <ResultsDashboard />}
+        {activeTab === "analyze" && <URLAnalyzer modelsReady={modelStatus?.any_trained} onResult={addAnalysisResult} />}
+        {activeTab === "results" && <ResultsDashboard analysisResults={analysisResults} onClearResults={clearAnalysisResults} />}
         {activeTab === "train" && <TrainingPanel onTrainingComplete={() => setModelStatus({ any_trained: true })} />}
         {activeTab === "features" && <FeatureExplorer />}
       </main>

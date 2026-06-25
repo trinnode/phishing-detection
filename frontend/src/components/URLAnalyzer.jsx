@@ -25,7 +25,7 @@ const riskColors = {
   LOW: { bg: "#052e16", border: "#15803d", text: "#86efac", badge: "#16a34a" },
 };
 
-export default function URLAnalyzer({ modelsReady }) {
+export default function URLAnalyzer({ modelsReady, onResult }) {
   const [url, setUrl] = useState("");
   const [condition, setCondition] = useState("C6");
   const [result, setResult] = useState(null);
@@ -51,6 +51,7 @@ export default function URLAnalyzer({ modelsReady }) {
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || "Prediction failed");
       setResult(data);
+      onResult?.({ ...data, timestamp: Date.now(), mode: 'single' });
     } catch (e) {
       setError(e.message);
     } finally {
@@ -73,6 +74,7 @@ export default function URLAnalyzer({ modelsReady }) {
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || "Batch prediction failed");
       setBatchResults(data);
+      onResult?.({ ...data, timestamp: Date.now(), mode: 'batch' });
     } catch (e) {
       setError(e.message);
     } finally {

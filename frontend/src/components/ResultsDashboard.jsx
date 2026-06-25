@@ -23,6 +23,12 @@ const metricLabels = { accuracy:"Accuracy", precision:"Precision", recall:"Recal
 const pipelineColor = { Lexical:"#6366f1", Structural:"#8b5cf6", Combined:"#06b6d4" };
 const classifierBg = { RF:"#1e1b4b", XGB:"#0c2340" };
 
+const RISK = {
+  HIGH: { bg: "rgba(224,89,91,0.1)", border: "rgba(224,89,91,0.3)", text: "#e0595b" },
+  MEDIUM: { bg: "rgba(217,140,58,0.1)", border: "rgba(217,140,58,0.3)", text: "#d98c3a" },
+  LOW: { bg: "rgba(80,184,122,0.1)", border: "rgba(80,184,122,0.3)", text: "#50b87a" },
+};
+
 function Bar({ value, max = 1, min = 0, isLower = false }) {
   const pct = ((value - min) / (max - min)) * 100;
   const good = isLower ? value < 0.05 : value > 0.95;
@@ -35,7 +41,7 @@ function Bar({ value, max = 1, min = 0, isLower = false }) {
   );
 }
 
-export default function ResultsDashboard() {
+export default function ResultsDashboard({ analysisResults, onClearResults }) {
   const [liveResults, setLiveResults] = useState(null);
   const [display, setDisplay] = useState("chapter4");
 
@@ -50,6 +56,113 @@ export default function ResultsDashboard() {
 
   return (
     <div>
+      {/* Analysis Results */}
+      {analysisResults && analysisResults.length > 0 && (
+        <div style={{ marginBottom: "2rem" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem", flexWrap: "wrap", gap: "0.75rem" }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: "1.05rem", color: "#e2e8f0" }}>URL Analysis Results</h2>
+              <p style={{ margin: "0.15rem 0 0", fontSize: "0.78rem", color: "#64748b" }}>
+                {analysisResults.length} analysis{analysisResults.length !== 1 ? "s" : ""} recorded this session
+              </p>
+            </div>
+            <button onClick={onClearResults} style={{ padding: "0.35rem 0.8rem", background: "#dc2626", border: "none", borderRadius: 6, color: "#fff", cursor: "pointer", fontSize: "0.75rem", fontWeight: 600 }}>Clear history</button>
+          </div>
+
+          {analysisResults.map((r, i) => {
+            if (r.mode === "batch") {
+              return (
+                <div key={r.timestamp || i} style={{ background: "#1a1d2e", border: "1px solid #2d3148", borderRadius: 10, padding: "1.25rem", marginBottom: "1rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.75rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <span style={{ fontSize: "0.85rem" }}>&#9776;</span>
+                      <strong style={{ fontSize: "0.85rem", color: "#e2e8f0" }}>Batch Analysis</strong>
+                    </div>
+                    <span style={{ fontSize: "0.68rem", color: "#475569" }}>{new Date(r.timestamp).toLocaleTimeString()}</span>
+                  </div>
+                  {r.summary && (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem" }}>
+                      {[
+                        { label: "Total", value: r.summary.total, c: "#6366f1" },
+                        { label: "Phishing", value: r.summary.phishing, c: "#e0595b" },
+                        { label: "Legitimate", value: r.summary.legitimate, c: "#50b87a" },
+                        { label: "Errors", value: r.summary.errors, c: "#d98c3a" },
+                      ].map(s => (
+                        <div key={s.label} style={{ textAlign: "center", padding: "0.5rem", background: "#0f1117", borderRadius: 8 }}>
+                          <p style={{ fontSize: "0.65rem", color: "#64748b", margin: 0 }}>{s.label}</p>
+                          <p style={{ fontSize: "1.2rem", fontWeight: 700, color: s.c, margin: "0.1rem 0 0" }}>{s.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {r.results && (
+                    <div style={{ marginTop: "0.75rem", maxHeight: 200, overflowY: "auto" }}>
+                      {r.results.slice(0, 10).map((item, j) => {
+                        const rc = item.error ? RISK.HIGH : RISK[item.risk_level] || RISK.LOW;
+                        return (
+                          <div key={j} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.35rem 0", borderBottom: j < Math.min(r.results.length, 10) - 1 ? "1px solid #2d3148" : "none" }}>
+                            <span style={{ fontSize: "0.8rem", flexShrink: 0 }}>
+                              {item.error ? "\u2717" : item.prediction === "phishing" ? "\u26A0" : "\u2713"}
+                            </span>
+                            <span style={{ fontFamily: "monospace", flex: 1, fontSize: "0.72rem", color: "#94a3b8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.url}</span>
+                            {!item.error && (
+                              <>
+                                <span style={{ padding: "2px 8px", borderRadius: 12, background: rc.bg, color: rc.text, border: `1px solid ${rc.border}`, fontSize: "0.65rem", fontWeight: 600 }}>{item.risk_level}</span>
+                                <span style={{ fontSize: "0.72rem", color: rc.text, fontWeight: 600, minWidth: 40, textAlign: "right" }}>{(item.phishing_probability * 100).toFixed(1)}%</span>
+                              </>
+                            )}
+                          </div>
+                        );
+                      })}
+                      {r.results.length > 10 && <p style={{ fontSize: "0.68rem", color: "#475569", textAlign: "center", marginTop: "0.4rem" }}>+ {r.results.length - 10} more</p>}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            const rc = RISK[r.risk_level] || RISK.LOW;
+            return (
+              <div key={r.timestamp || i} style={{ background: "#1a1d2e", border: "1px solid #2d3148", borderLeft: `3px solid ${rc.text}`, borderRadius: 10, padding: "1.25rem", marginBottom: "0.75rem" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <span style={{ fontSize: "1rem" }}>{r.prediction === "phishing" ? "\u26A0" : "\u2713"}</span>
+                    <strong style={{ fontSize: "0.85rem", color: rc.text }}>{r.prediction?.toUpperCase()}</strong>
+                    <span style={{ padding: "2px 8px", borderRadius: 12, background: rc.bg, color: rc.text, border: `1px solid ${rc.border}`, fontSize: "0.65rem", fontWeight: 700 }}>
+                      {r.risk_level}
+                    </span>
+                  </div>
+                  <span style={{ fontSize: "0.68rem", color: "#475569" }}>{new Date(r.timestamp).toLocaleTimeString()}</span>
+                </div>
+                <p style={{ fontFamily: "monospace", color: "#94a3b8", fontSize: "0.75rem", wordBreak: "break-all", margin: "0 0 0.5rem" }}>{r.url}</p>
+                <div style={{ display: "flex", gap: "1.25rem", flexWrap: "wrap" }}>
+                  {[
+                    { label: "Probability", value: `${(r.phishing_probability * 100).toFixed(1)}%` },
+                    { label: "Confidence", value: `${(r.confidence * 100).toFixed(1)}%` },
+                    { label: "Pipeline", value: r.pipeline },
+                    { label: "Classifier", value: r.classifier },
+                    { label: "Condition", value: r.condition },
+                  ].map(m => (
+                    <div key={m.label}>
+                      <span style={{ fontSize: "0.62rem", color: "#475569", display: "block" }}>{m.label}</span>
+                      <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "#e2e8f0" }}>{m.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {!analysisResults?.length && (
+        <div style={{ marginBottom: "2rem", padding: "2rem", background: "#1a1d2e", border: "1px solid #2d3148", borderRadius: 10, textAlign: "center" }}>
+          <p style={{ fontSize: "0.9rem", color: "#94a3b8", marginBottom: "0.5rem" }}>No URL analyses yet</p>
+          <p style={{ fontSize: "0.78rem", color: "#64748b" }}>Go to the <strong>URL Analysis</strong> tab to analyse a URL, and the results will appear here.</p>
+        </div>
+      )}
+
+      {/* Experiment Results */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
         <div>
           <h2 style={{ margin: 0, color: "#e2e8f0", fontSize: "1.1rem" }}>Experiment Results — All 6 Conditions</h2>
