@@ -3,10 +3,10 @@ import { API_BASE } from "../App";
 
 const CONDITION_OPTIONS = [
   { value: "C6", label: "C6 — Combined XGBoost (Best, F1=0.984)" },
-  { value: "C5", label: "C5 — Combined Random Forest (F1=0.973)" },
-  { value: "C4", label: "C4 — Structural XGBoost (F1=0.960)" },
-  { value: "C3", label: "C3 — Structural Random Forest (F1=0.949)" },
-  { value: "C2", label: "C2 — Lexical XGBoost (F1=0.933)" },
+  { value: "C5", label: "C5 — Structural XGBoost (F1=0.960)" },
+  { value: "C4", label: "C4 — Lexical XGBoost (F1=0.933)" },
+  { value: "C3", label: "C3 — Combined Random Forest (F1=0.973)" },
+  { value: "C2", label: "C2 — Structural Random Forest (F1=0.949)" },
   { value: "C1", label: "C1 — Lexical Random Forest (F1=0.920)" },
 ];
 
@@ -256,9 +256,9 @@ export default function URLAnalyzer({ modelsReady, onResult }) {
           ))}
           <div style={{ marginTop: "1rem", padding: "0.75rem", background: "#0f1117", borderRadius: 6, fontSize: "0.75rem", color: "#475569", lineHeight: 1.5 }}>
             <strong style={{ color: "#64748b" }}>Pipeline reference:</strong><br />
-            C1–C2: Lexical only (14 features)<br />
-            C3–C4: Structural only (14 features)<br />
-            C5–C6: Combined (25 features)
+            C1 + C4: Lexical only (14 features)<br />
+            C2 + C5: Structural only (14 features)<br />
+            C3 + C6: Combined (25 features)
           </div>
         </div>
       </div>

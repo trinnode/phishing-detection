@@ -100,7 +100,7 @@ export default function TrainingPanel({ onTrainingComplete }) {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "0.75rem" }}>
           {["C1","C2","C3","C4","C5","C6"].map(cid => {
             const trained = status?.models?.[cid];
-            const labels = { C1:"Lexical RF", C2:"Lexical XGB", C3:"Structural RF", C4:"Structural XGB", C5:"Combined RF", C6:"Combined XGB" };
+            const labels = { C1:"Lexical RF", C2:"Structural RF", C3:"Combined RF", C4:"Lexical XGB", C5:"Structural XGB", C6:"Combined XGB" };
             return (
               <div key={cid} style={{ padding: "0.75rem", background: "#0f1117", borderRadius: 8, border: `1px solid ${trained ? "#065f46" : "#1e2235"}` }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>

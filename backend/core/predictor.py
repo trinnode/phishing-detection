@@ -24,10 +24,10 @@ RESULTS_DIR = Path(__file__).parent.parent / 'results'
 # Condition → (pipeline, classifier)
 CONDITION_MAP = {
     'C1': ('lexical', 'RF'),
-    'C2': ('lexical', 'XGB'),
-    'C3': ('structural', 'RF'),
-    'C4': ('structural', 'XGB'),
-    'C5': ('combined', 'RF'),
+    'C2': ('structural', 'RF'),
+    'C3': ('combined', 'RF'),
+    'C4': ('lexical', 'XGB'),
+    'C5': ('structural', 'XGB'),
     'C6': ('combined', 'XGB'),
 }
 

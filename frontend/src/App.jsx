@@ -38,26 +38,24 @@ export default function App() {
   }
 
   const tabs = [
-    { id: "analyze", label: "URL Analyser", icon: "🔍" },
-    { id: "results", label: "Experiment Results", icon: "📊" },
-    { id: "train", label: "Training Pipeline", icon: "⚙️" },
-    { id: "features", label: "Feature Definitions", icon: "📋" },
+    { id: "analyze", label: "URL Analyser" },
+    { id: "results", label: "Experiment Results" },
+    { id: "train", label: "Training Pipeline" },
+    { id: "features", label: "Feature Definitions" },
   ];
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0f1117", color: "#e2e8f0", fontFamily: "'Inter', sans-serif" }}>
+    <div className="app-shell" style={{ minHeight: "100vh", background: "#0f1117", color: "#e2e8f0", fontFamily: "'Inter', sans-serif" }}>
       {/* Header */}
-      <header style={{ background: "#1a1d2e", borderBottom: "1px solid #2d3148", padding: "0 2rem" }}>
+      <header className="app-header" style={{ background: "#1a1d2e", borderBottom: "1px solid #2d3148", padding: "0 2rem" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", gap: "1rem", padding: "1rem 0" }}>
-          <div style={{ width: 40, height: 40, background: "linear-gradient(135deg, #6366f1, #8b5cf6)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>
-            🛡️
-          </div>
+          <img src="/logo.svg" alt="FishMark" style={{ height: 40 }} />
           <div>
             <h1 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, color: "#a5b4fc" }}>
-              Phishing Domain Detection Framework
+              FishMark
             </h1>
             <p style={{ margin: 0, fontSize: "0.75rem", color: "#64748b" }}>
-              Lexical & Structural Feature Extraction | RF vs XGBoost | FUT Minna Research Project
+              Phishing Domain Detection — Lexical & Structural Feature Extraction | RF vs XGBoost | FUT Minna Research Project
             </p>
           </div>
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.5rem" }}>
@@ -91,7 +89,7 @@ export default function App() {
                 transition: "all 0.15s",
               }}
             >
-              {t.icon} {t.label}
+                {t.label}
             </button>
           ))}
         </nav>
@@ -106,7 +104,7 @@ export default function App() {
       </main>
 
       <footer style={{ textAlign: "center", padding: "2rem", color: "#374151", fontSize: "0.75rem", borderTop: "1px solid #1e2235" }}>
-        LEXICAL AND STRUCTURAL FEATURE EXTRACTION FRAMEWORK FOR COMPARATIVE ANALYSIS OF PHISHING DOMAIN DETECTION BY RANDOM FOREST AND XGBOOST — FUT Minna
+        LEXICAL AND STRUCTURAL FEATURE EXTRACTION FRAMEWORK FOR COMPARATIVE ANALYSIS OF PHISHING DOMAIN DETECTION BY RANDOM FOREST AND XGBOOST — FishMark | FUT Minna
       </footer>
     </div>
   );
