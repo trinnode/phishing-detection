@@ -49,13 +49,13 @@ export default function App() {
       {/* Header */}
       <header className="app-header" style={{ background: "#1a1d2e", borderBottom: "1px solid #2d3148", padding: "0 2rem" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", gap: "1rem", padding: "1rem 0" }}>
-          <img src="/logo.svg" alt="FishMark" style={{ height: 40 }} />
+          <img src="/logo.svg" alt="Shikibetsu" style={{ height: 40 }} />
           <div>
             <h1 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, color: "#a5b4fc" }}>
-              FishMark
+              Shikibetsu
             </h1>
             <p style={{ margin: 0, fontSize: "0.75rem", color: "#64748b" }}>
-              Phishing Domain Detection — Lexical & Structural Feature Extraction | RF vs XGBoost | FUT Minna Research Project
+              Lexical and Structural Feature Extraction Framework for Comparative Analysis of Phishing Domain Detection by Random Forest and XGBoost | FUT Minna Research Project
             </p>
           </div>
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.5rem" }}>
@@ -104,7 +104,7 @@ export default function App() {
       </main>
 
       <footer style={{ textAlign: "center", padding: "2rem", color: "#374151", fontSize: "0.75rem", borderTop: "1px solid #1e2235" }}>
-        LEXICAL AND STRUCTURAL FEATURE EXTRACTION FRAMEWORK FOR COMPARATIVE ANALYSIS OF PHISHING DOMAIN DETECTION BY RANDOM FOREST AND XGBOOST — FishMark | FUT Minna
+        Lexical and Structural Feature Extraction Framework for Comparative Analysis of Phishing Domain Detection by Random Forest and XGBoost | Shikibetsu 識別 | FUT Minna
       </footer>
     </div>
   );

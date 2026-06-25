@@ -216,10 +216,10 @@ def run_all_conditions(
 
     conditions = [
         ('C1', df_lexical, 'rf'),
-        ('C2', df_structural, 'rf'),
-        ('C3', df_combined, 'rf'),
-        ('C4', df_lexical, 'xgb'),
-        ('C5', df_structural, 'xgb'),
+        ('C2', df_lexical, 'xgb'),
+        ('C3', df_structural, 'rf'),
+        ('C4', df_structural, 'xgb'),
+        ('C5', df_combined, 'rf'),
         ('C6', df_combined, 'xgb'),
     ]
 

@@ -24,10 +24,10 @@ RESULTS_DIR = Path(__file__).parent.parent / 'results'
 # Condition → (pipeline, classifier)
 CONDITION_MAP = {
     'C1': ('lexical', 'RF'),
-    'C2': ('structural', 'RF'),
-    'C3': ('combined', 'RF'),
-    'C4': ('lexical', 'XGB'),
-    'C5': ('structural', 'XGB'),
+    'C2': ('lexical', 'XGB'),
+    'C3': ('structural', 'RF'),
+    'C4': ('structural', 'XGB'),
+    'C5': ('combined', 'RF'),
     'C6': ('combined', 'XGB'),
 }
 
@@ -95,20 +95,20 @@ def predict(
     # Load model
     model, scaler = _load_model(condition_id)
 
+    # Handle feature count mismatch for combined models (post-reduction)
+    n_expected = model.n_features_in_
+    if X.shape[1] > n_expected:
+        X = X[:, :n_expected]
+        feat_names = feat_names[:n_expected]
+    elif X.shape[1] < n_expected:
+        pad = np.zeros((1, n_expected - X.shape[1]))
+        X = np.hstack([X, pad])
+
     # Scale
     if scaler is not None:
         X_scaled = scaler.transform(X)
     else:
         X_scaled = X
-
-    # Handle feature count mismatch for combined models (post-reduction)
-    n_expected = model.n_features_in_
-    if X_scaled.shape[1] > n_expected:
-        X_scaled = X_scaled[:, :n_expected]
-        feat_names = feat_names[:n_expected]
-    elif X_scaled.shape[1] < n_expected:
-        pad = np.zeros((1, n_expected - X_scaled.shape[1]))
-        X_scaled = np.hstack([X_scaled, pad])
 
     # Predict
     label = int(model.predict(X_scaled)[0])

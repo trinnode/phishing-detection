@@ -2,12 +2,12 @@ import { useState } from "react";
 import { API_BASE } from "../App";
 
 const CONDITION_OPTIONS = [
-  { value: "C6", label: "C6 — Combined XGBoost (Best, F1=0.984)" },
-  { value: "C5", label: "C5 — Structural XGBoost (F1=0.960)" },
-  { value: "C4", label: "C4 — Lexical XGBoost (F1=0.933)" },
-  { value: "C3", label: "C3 — Combined Random Forest (F1=0.973)" },
-  { value: "C2", label: "C2 — Structural Random Forest (F1=0.949)" },
-  { value: "C1", label: "C1 — Lexical Random Forest (F1=0.920)" },
+  { value: "C6", label: "C6 Combined XGBoost (Best, F1 0.984)" },
+  { value: "C5", label: "C5 Combined Random Forest (F1 0.973)" },
+  { value: "C4", label: "C4 Structural XGBoost (F1 0.960)" },
+  { value: "C3", label: "C3 Structural Random Forest (F1 0.949)" },
+  { value: "C2", label: "C2 Lexical XGBoost (F1 0.933)" },
+  { value: "C1", label: "C1 Lexical Random Forest (F1 0.920)" },
 ];
 
 const SAMPLE_URLS = [
@@ -88,7 +88,7 @@ export default function URLAnalyzer({ modelsReady, onResult }) {
     <div>
       {!modelsReady && (
         <div style={{ background: "#1e1b4b", border: "1px solid #4338ca", borderRadius: 8, padding: "0.75rem 1rem", marginBottom: "1.5rem", fontSize: "0.85rem", color: "#a5b4fc" }}>
-          ⚠️ <strong>Demo Mode:</strong> Models not yet trained. Using heuristic lexical scoring. Go to <strong>Training Pipeline</strong> tab to train all 6 conditions.
+          Demo Mode: Models not yet trained. Using heuristic lexical scoring. Go to Training Pipeline tab to train all 6 conditions.
         </div>
       )}
 
@@ -96,7 +96,7 @@ export default function URLAnalyzer({ modelsReady, onResult }) {
         {["single", "batch"].map(m => (
           <button key={m} onClick={() => { setBatchMode(m === "batch"); setResult(null); setBatchResults(null); }}
             style={{ padding: "0.5rem 1rem", background: (batchMode ? m === "batch" : m === "single") ? "#6366f1" : "#1e2235", border: "1px solid #2d3148", borderRadius: 6, color: "#e2e8f0", cursor: "pointer", fontSize: "0.85rem" }}>
-            {m === "single" ? "🔍 Single URL" : "📋 Batch Analysis"}
+            {m === "single" ? "Single URL" : "Batch Analysis"}
           </button>
         ))}
       </div>
@@ -148,26 +148,23 @@ export default function URLAnalyzer({ modelsReady, onResult }) {
 
           {error && (
             <div style={{ marginTop: "1rem", padding: "0.75rem 1rem", background: "#450a0a", border: "1px solid #991b1b", borderRadius: 8, color: "#fca5a5", fontSize: "0.85rem" }}>
-              ✗ {error}
+              {error}
             </div>
           )}
 
           {/* Single result */}
           {result && !batchMode && colors && (
             <div style={{ marginTop: "1.5rem", background: colors.bg, border: `1px solid ${colors.border}`, borderRadius: 10, padding: "1.5rem" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
-                <div>
-                  <span style={{ fontSize: "1.5rem", marginRight: "0.5rem" }}>
-                    {result.prediction === "phishing" ? "🚨" : "✅"}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
+                  <div>
+                    <strong style={{ fontSize: "1.1rem", color: colors.text }}>
+                      {(result.prediction || "").toUpperCase()}
+                    </strong>
+                  </div>
+                  <span style={{ background: colors.badge, color: "#fff", padding: "4px 12px", borderRadius: 20, fontSize: "0.75rem", fontWeight: 700 }}>
+                    {result.risk_level} RISK
                   </span>
-                  <strong style={{ fontSize: "1.1rem", color: colors.text }}>
-                    {result.prediction.toUpperCase()}
-                  </strong>
                 </div>
-                <span style={{ background: colors.badge, color: "#fff", padding: "4px 12px", borderRadius: 20, fontSize: "0.75rem", fontWeight: 700 }}>
-                  {result.risk_level} RISK
-                </span>
-              </div>
 
               <p style={{ color: "#94a3b8", fontSize: "0.8rem", wordBreak: "break-all", margin: "0 0 1rem" }}>{result.url}</p>
 
@@ -209,7 +206,7 @@ export default function URLAnalyzer({ modelsReady, onResult }) {
 
               {result.warning && (
                 <p style={{ fontSize: "0.75rem", color: "#f59e0b", marginTop: "0.75rem", padding: "0.5rem", background: "rgba(245,158,11,0.1)", borderRadius: 4 }}>
-                  ⚠ {result.warning}
+                  {result.warning}
                 </p>
               )}
             </div>
@@ -233,7 +230,7 @@ export default function URLAnalyzer({ modelsReady, onResult }) {
               <div style={{ background: "#1a1d2e", border: "1px solid #2d3148", borderRadius: 8, overflow: "hidden" }}>
                 {batchResults.results.map((r, i) => (
                   <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.6rem 1rem", borderBottom: "1px solid #1e2235" }}>
-                    <span style={{ fontSize: "1rem" }}>{r.prediction === "phishing" ? "🚨" : "✅"}</span>
+                    <span style={{ fontSize: "0.8rem", color: r.prediction === "phishing" ? "#fca5a5" : "#86efac" }}>{r.prediction === "phishing" ? "Phishing" : "Legitimate"}</span>
                     <span style={{ flex: 1, fontSize: "0.8rem", color: "#94a3b8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.url}</span>
                     <span style={{ fontSize: "0.75rem", fontWeight: 600, color: riskColors[r.risk_level]?.text }}>{r.risk_level}</span>
                     <span style={{ fontSize: "0.75rem", color: "#64748b", minWidth: 45, textAlign: "right" }}>{(r.phishing_probability * 100).toFixed(1)}%</span>
@@ -256,9 +253,9 @@ export default function URLAnalyzer({ modelsReady, onResult }) {
           ))}
           <div style={{ marginTop: "1rem", padding: "0.75rem", background: "#0f1117", borderRadius: 6, fontSize: "0.75rem", color: "#475569", lineHeight: 1.5 }}>
             <strong style={{ color: "#64748b" }}>Pipeline reference:</strong><br />
-            C1 + C4: Lexical only (14 features)<br />
-            C2 + C5: Structural only (14 features)<br />
-            C3 + C6: Combined (25 features)
+            C1 C2: Lexical only (14 features)<br />
+            C3 C4: Structural only (14 features)<br />
+            C5 C6: Combined (25 features post reduction)
           </div>
         </div>
       </div>

@@ -1,15 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" width="320" height="80">
-  <rect width="320" height="80" fill="#080910"/>
-  <g transform="translate(20, 12)">
-    <!-- Fish body -->
+  <rect width="320" height="80" fill="#0f1117"/>
+  <g transform="translate(16, 12)">
     <path d="M0 28 Q10 8 30 12 Q50 16 60 28 Q65 30 60 32 Q50 44 30 48 Q10 52 0 28Z" fill="#e4e6ef"/>
-    <!-- Fish tail -->
-    <path d="M60 28 L78 12 L78 44 Z" fill="#e4e6ef"/>
-    <!-- Fish eye -->
-    <circle cx="12" cy="26" r="3" fill="#080910"/>
-    <!-- Checkmark on fish -->
-    <path d="M35 28 L42 36 L55 20" stroke="#080910" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M60 28 L76 12 L76 44 Z" fill="#e4e6ef"/>
+    <circle cx="12" cy="26" r="3" fill="#0f1117"/>
+    <path d="M35 28 L42 36 L55 20" stroke="#0f1117" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
-  <text x="100" y="36" font-family="Inter,system-ui,sans-serif" font-size="18" font-weight="700" fill="#e4e6ef" letter-spacing="-0.3">FishMark</text>
-  <text x="100" y="56" font-family="Inter,system-ui,sans-serif" font-size="10" fill="#5c6078" letter-spacing="0.5">フィッシュマーク</text>
+  <text x="98" y="36" font-family="Inter,system-ui,sans-serif" font-size="18" font-weight="700" fill="#e4e6ef" letter-spacing="-0.3">Shikibetsu</text>
+  <text x="98" y="54" font-family="Inter,system-ui,sans-serif" font-size="9" fill="#5c6078" letter-spacing="0.4">識別  |  Phishing Domain Detection</text>
 </svg>

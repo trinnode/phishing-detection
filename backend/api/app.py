@@ -36,7 +36,7 @@ TRAINING_STATUS = {'running': False, 'done': False, 'error': None, 'log': []}
 
 @app.route('/api/health', methods=['GET'])
 def health():
-    return jsonify({'status': 'ok', 'service': 'phishing-detection-api'})
+    return jsonify({'status': 'ok', 'service': 'shikibetsu-phishing-detection-api'})
 
 
 # ── Prediction ─────────────────────────────────────────────────────────────────
@@ -166,7 +166,7 @@ def model_status():
         'models': status,
         'any_trained': any_trained,
         'recommended': 'C6',
-        'note': 'C6 = Combined XGBoost (best F1 per Chapter 4 results)'
+        'note': 'C6 = Combined XGBoost (best F1 = 0.984 per Chapter 4 results)'
     })
 
 

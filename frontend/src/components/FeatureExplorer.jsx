@@ -74,10 +74,10 @@ export default function FeatureExplorer() {
 
       {/* Tabs */}
       <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.25rem" }}>
-        {["lexical", "structural", "importance"].map(t => (
+          {["lexical", "structural", "importance"].map(t => (
           <button key={t} onClick={() => setActiveTab(t)}
             style={{ padding: "0.5rem 1.1rem", background: activeTab === t ? "#6366f1" : "#1a1d2e", border: "1px solid #2d3148", borderRadius: 6, color: activeTab === t ? "#fff" : "#64748b", cursor: "pointer", fontSize: "0.85rem", fontWeight: activeTab === t ? 600 : 400 }}>
-            {t === "lexical" ? "📝 Lexical (14)" : t === "structural" ? "🏗 Structural (14)" : "⭐ Top Importance"}
+            {t === "lexical" ? "Lexical (14)" : t === "structural" ? "Structural (14)" : "Top Importance"}
           </button>
         ))}
       </div>
