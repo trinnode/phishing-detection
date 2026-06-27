@@ -4,7 +4,11 @@ import ResultsDashboard from "./components/ResultsDashboard";
 import TrainingPanel from "./components/TrainingPanel";
 import FeatureExplorer from "./components/FeatureExplorer";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_BASE = import.meta.env.VITE_API_URL || (
+  window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
+    ? 'https://phishing-detection-backend.up.railway.app'
+    : 'http://localhost:5000'
+);
 
 export { API_BASE };
 

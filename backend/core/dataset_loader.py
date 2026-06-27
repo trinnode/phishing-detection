@@ -126,25 +126,26 @@ def _high_entropy_string(length: int) -> str:
 
 
 def _generate_phishing_url() -> str:
-    tactics = random.choice(['dga', 'typosquatting', 'combosquatting', 'ip', 'obfuscated'])
+    tactics = random.choice(['dga', 'typosquatting', 'combosquatting', 'ip', 'obfuscated', 'masked_legit'])
     brands = ['paypal', 'amazon', 'google', 'microsoft', 'apple', 'ebay', 'facebook', 'instagram']
-    tlds = ['.tk', '.ml', '.ga', '.cf', '.gq', '.xyz', '.top', '.click', '.info']
+    risky_tlds = ['.tk', '.ml', '.ga', '.cf', '.gq', '.xyz', '.top', '.click', '.info']
+    safe_tlds = ['.com', '.org', '.net', '.co.uk']
 
     if tactics == 'dga':
         domain = _high_entropy_string(random.randint(12, 24))
-        tld = random.choice(tlds)
+        tld = random.choice(risky_tlds if random.random() < 0.7 else safe_tlds)
         return f"http://{domain}{tld}/login"
 
     elif tactics == 'typosquatting':
         brand = random.choice(brands)
         mutation = brand[:-1] + random.choice(string.ascii_lowercase)
-        tld = random.choice(tlds)
+        tld = random.choice(risky_tlds if random.random() < 0.6 else safe_tlds)
         return f"http://secure-{mutation}{tld}/verify.php?id={_random_string(8)}"
 
     elif tactics == 'combosquatting':
         brand = random.choice(brands)
         suffix = random.choice(['-login', '-secure', '-verify', '-support', '-update', '-confirm'])
-        tld = random.choice(['.com', '.net'] + tlds)
+        tld = random.choice(risky_tlds + safe_tlds)
         path = random.choice(['/account', '/signin', '/password-reset', '/confirm'])
         return f"http://{brand}{suffix}{tld}{path}"
 
@@ -152,10 +153,14 @@ def _generate_phishing_url() -> str:
         ip = '.'.join(str(random.randint(1, 254)) for _ in range(4))
         return f"http://{ip}/login.php?redirect={_random_string(12)}"
 
-    else:  # obfuscated
+    elif tactics == 'obfuscated':
         brand = random.choice(brands)
         subdomain = '.'.join([_random_string(6) for _ in range(random.randint(2, 4))])
         return f"http://{subdomain}.{brand}-secure.{_random_string(4)}.tk/@user?src=email"
+
+    else:  # masked_legit — phishing URL that looks legitimate on surface
+        brand = random.choice(brands)
+        return f"https://www.{brand}.com/{_random_string(4)}/{_random_string(8)}"
 
 
 def _generate_legitimate_url() -> str:
@@ -174,47 +179,66 @@ def _generate_legitimate_url() -> str:
     path_parts = random.randint(0, 2)
     path = '/'.join([random.choice(words) for _ in range(path_parts)])
     path = f"/{path}" if path else ''
+
+    # ~10% of legitimate URLs use unusual structures (CDN, short URLs, hyphens)
+    if random.random() < 0.10:
+        return f"https://cdn-{random.choice(brands)}-static{random.choice(tlds)}/assets/{_random_string(6)}"
+
     return f"https://www.{brand}{tld}{path}"
 
 
 def _generate_structural_features(is_phishing: bool) -> dict:
     """
     Generate synthetic but statistically realistic structural features.
-    Mirrors the distributional patterns described in Chapter 4.
+    Distributions overlap between classes (no perfect separation).
     """
     if is_phishing:
+        # Overlapping distributions: phishing sites skew young/risky but some overlap with legitimate
+        age = int(np.clip(np.random.exponential(120), 0, 2000))
+        expiry = int(np.clip(np.random.normal(300, 180), 1, 2000))
+        dns_ttl = int(np.clip(np.random.lognormal(6, 1.5), 60, 86400))
+        ssl_days = int(np.clip(np.random.exponential(90), 0, 730))
+        registrar_ent = round(np.random.uniform(1.5, 4.5), 3)
+
         return {
-            'domain_age_days': int(np.clip(np.random.exponential(30), 0, 180)),
-            'domain_expiry_days': int(np.clip(np.random.normal(365, 100), 30, 730)),
-            'whois_available': int(random.random() < 0.4),
-            'dns_ttl_value': int(np.clip(np.random.exponential(300), 60, 3600)),
-            'has_mx_record': int(random.random() < 0.25),
-            'has_spf_record': int(random.random() < 0.15),
-            'dns_resolves': int(random.random() < 0.85),
-            'ns_count': int(np.clip(np.random.poisson(1.5), 1, 4)),
-            'ssl_valid': int(random.random() < 0.45),
-            'ssl_days_remaining': int(np.clip(np.random.exponential(45), 0, 365)),
-            'ip_in_blacklist_asn': int(random.random() < 0.35),
-            'registrar_entropy': round(np.random.uniform(2.5, 4.5), 3),
-            'country_code_risk': int(random.random() < 0.6),
-            'nameserver_diversity': int(random.random() < 0.3),
+            'domain_age_days': age,
+            'domain_expiry_days': expiry,
+            'whois_available': int(random.random() < 0.55),
+            'dns_ttl_value': dns_ttl,
+            'has_mx_record': int(random.random() < 0.45),
+            'has_spf_record': int(random.random() < 0.35),
+            'dns_resolves': int(random.random() < 0.88),
+            'ns_count': int(np.clip(np.random.poisson(2.0), 1, 8)),
+            'ssl_valid': int(random.random() < 0.55),
+            'ssl_days_remaining': ssl_days,
+            'ip_in_blacklist_asn': int(random.random() < 0.20),
+            'registrar_entropy': registrar_ent,
+            'country_code_risk': int(random.random() < 0.35),
+            'nameserver_diversity': int(random.random() < 0.50),
         }
     else:
+        # Legitimate domains skew older/stable but overlap with phishing tail
+        age = int(np.clip(np.random.exponential(800), 30, 5000))
+        expiry = int(np.clip(np.random.normal(500, 250), 30, 2500))
+        dns_ttl = int(np.clip(np.random.lognormal(7.5, 1.2), 120, 86400))
+        ssl_days = int(np.clip(np.random.exponential(200), 0, 1500))
+        registrar_ent = round(np.random.uniform(1.0, 3.5), 3)
+
         return {
-            'domain_age_days': int(np.clip(np.random.normal(1800, 600), 365, 5000)),
-            'domain_expiry_days': int(np.clip(np.random.normal(730, 200), 180, 1825)),
-            'whois_available': int(random.random() < 0.9),
-            'dns_ttl_value': int(np.clip(np.random.normal(3600, 1200), 1800, 86400)),
-            'has_mx_record': int(random.random() < 0.85),
-            'has_spf_record': int(random.random() < 0.75),
-            'dns_resolves': int(random.random() < 0.99),
-            'ns_count': int(np.clip(np.random.poisson(3), 2, 8)),
-            'ssl_valid': int(random.random() < 0.95),
-            'ssl_days_remaining': int(np.clip(np.random.normal(300, 90), 60, 730)),
-            'ip_in_blacklist_asn': int(random.random() < 0.01),
-            'registrar_entropy': round(np.random.uniform(1.2, 2.8), 3),
-            'country_code_risk': int(random.random() < 0.05),
-            'nameserver_diversity': int(random.random() < 0.85),
+            'domain_age_days': age,
+            'domain_expiry_days': expiry,
+            'whois_available': int(random.random() < 0.85),
+            'dns_ttl_value': dns_ttl,
+            'has_mx_record': int(random.random() < 0.80),
+            'has_spf_record': int(random.random() < 0.70),
+            'dns_resolves': int(random.random() < 0.98),
+            'ns_count': int(np.clip(np.random.poisson(3.0), 1, 10)),
+            'ssl_valid': int(random.random() < 0.90),
+            'ssl_days_remaining': ssl_days,
+            'ip_in_blacklist_asn': int(random.random() < 0.03),
+            'registrar_entropy': registrar_ent,
+            'country_code_risk': int(random.random() < 0.08),
+            'nameserver_diversity': int(random.random() < 0.80),
         }
 
 
@@ -249,6 +273,16 @@ def generate_synthetic_dataset(
     print("  Extracting lexical features...")
     lex_records = [extract_lexical_features(u) for u in all_urls]
     df_lex = pd.DataFrame(lex_records)
+
+    # Add Gaussian noise to lexical features to prevent unrealistic perfect separation
+    # Real-world lexical features have significant noise — same URL type can vary widely
+    rng = np.random.RandomState(random_seed)
+    for col in df_lex.columns:
+        if col in ('has_ip_address', 'has_at_symbol', 'has_double_slash', 'tld_in_legitimate_list'):
+            continue
+        scale = df_lex[col].std() * 0.12 if df_lex[col].std() > 0 else 0.01
+        df_lex[col] += rng.normal(0, scale, size=len(df_lex))
+        df_lex[col] = df_lex[col].clip(lower=0)
 
     print("  Generating structural features...")
     struct_records = [_generate_structural_features(lbl == 1) for lbl in labels]
@@ -296,9 +330,11 @@ def prepare_datasets_from_real_data(
     lex_records = [extract_lexical_features(u) for u in urls]
     df_lex = pd.DataFrame(lex_records)
 
-    # For real data, use offline structural defaults (WHOIS not feasible for 40k URLs)
+    # For real data, use offline structural defaults (WHOIS queries not feasible for 40k URLs)
+    # Generate features from blended distribution to avoid label leakage
     print("  Generating structural features (offline mode for large dataset)...")
-    struct_records = [_generate_structural_features(lbl == 1) for lbl in labels]
+    blended_labels = [random.choice([0, 1]) for _ in labels]
+    struct_records = [_generate_structural_features(bool(lbl)) for lbl in blended_labels]
     df_struct = pd.DataFrame(struct_records)
 
     df_combined_raw = pd.concat([df_lex, df_struct], axis=1)
