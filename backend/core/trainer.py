@@ -200,6 +200,7 @@ def run_all_conditions(
     df_combined: pd.DataFrame,
     y: pd.Series,
     fast_mode: bool = False,
+    status: Optional[dict] = None,
 ) -> dict:
     """
     Run all 6 experimental conditions and save results.
@@ -224,13 +225,25 @@ def run_all_conditions(
     ]
 
     for cid, X, clf in conditions:
+        cond_desc = {'C1': 'Lexical RF', 'C2': 'Lexical XGB', 'C3': 'Structural RF',
+                     'C4': 'Structural XGB', 'C5': 'Combined RF', 'C6': 'Combined XGB'}
+        cls_name = 'Random Forest' if clf == 'rf' else 'XGBoost'
+        if status is not None:
+            status['log'].append(f'  Training {cid} ({cond_desc[cid]}) — {X.shape[1]} features, {cls_name} classifier...')
         metrics, model, y_test, y_pred = train_condition(
             X, y, clf, cid, fast_mode=fast_mode
         )
         all_results[cid] = metrics
         all_preds[cid] = {'y_test': y_test.tolist(), 'y_pred': y_pred.tolist()}
+        if status is not None:
+            status['log'].append(
+                f'  ✓ {cid} complete — F1: {metrics["f1_score"]:.4f}, '
+                f'AUC: {metrics.get("auc_roc", 0):.4f}, FPR: {metrics["false_positive_rate"]:.4f}'
+            )
 
     # ── McNemar's significance tests ──────────────────────────────────────
+    if status is not None:
+        status['log'].append('[6/7] Phase 6: Statistical Evaluation — McNemar\'s test...')
     print("\n── Statistical Significance (McNemar's Test) ──")
     significance = {}
 
@@ -262,9 +275,20 @@ def run_all_conditions(
     print(f"  C5 vs C6 (Combined): p={mn_56['p_value']} | Significant: {mn_56['significant_at_0.05']}")
 
     # ── Persist results ───────────────────────────────────────────────────
+    n_phishing = int(sum(y == 1))
+    n_legitimate = int(sum(y == 0))
     final_output = {
         'conditions': all_results,
         'significance_tests': significance,
+        'dataset_info': {
+            'total_samples': len(y),
+            'phishing': n_phishing,
+            'legitimate': n_legitimate,
+            'ratio': f'{n_phishing / max(n_legitimate, 1):.2f}:1',
+            'n_features_lexical': df_lexical.shape[1],
+            'n_features_structural': df_structural.shape[1],
+            'n_features_combined': df_combined.shape[1],
+        },
     }
     results_path = RESULTS_DIR / 'experiment_results.json'
     with open(results_path, 'w') as f:

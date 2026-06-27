@@ -25,11 +25,21 @@ DATA_DIR = Path(__file__).parent.parent.parent / 'data'
 # ── Real dataset loaders ───────────────────────────────────────────────────────
 
 def load_phishtank_csv(path: str) -> pd.DataFrame:
-    """Load PhishTank verified_online.csv"""
-    df = pd.read_csv(path, usecols=['url', 'verified'])
-    df = df[df['verified'] == 'yes'].copy()
+    """Load PhishTank verified_online.csv — handles both column schemas."""
+    df = pd.read_csv(path, nrows=0)
+    cols = df.columns.tolist()
+    if 'url' not in cols:
+        return pd.DataFrame(columns=['url', 'label'])
+
+    if 'verified' in cols:
+        df = pd.read_csv(path, usecols=['url', 'verified'])
+        df = df[df['verified'] == 'yes'].copy()
+    elif 'verification_status' in cols:
+        df = pd.read_csv(path, usecols=['url', 'verification_status'])
+        df = df[df['verification_status'] == 'verified'].copy()
+    else:
+        df = pd.read_csv(path, usecols=['url'])
     df['label'] = 1
-    df = df.rename(columns={'url': 'url'})
     return df[['url', 'label']]
 
 
@@ -274,6 +284,10 @@ def prepare_datasets_from_real_data(
 
     urls = raw_df['url'].tolist()
     labels = raw_df['label'].tolist()
+
+    if len(set(labels)) < 2:
+        print(f"  Dataset contains only one class ({set(labels)}). Falling back to synthetic dataset.")
+        return generate_synthetic_dataset()
     y = pd.Series(labels, name='label')
 
     print(f"  {len(urls)} URLs loaded. Extracting features...")

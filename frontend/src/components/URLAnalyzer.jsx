@@ -48,8 +48,9 @@ export default function URLAnalyzer({ modelsReady, onResult }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: url.trim(), condition }),
       });
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || "Prediction failed");
+      let data = {};
+      try { data = await resp.json(); } catch {}
+      if (!resp.ok) throw new Error(data?.error || `Server error (${resp.status})`);
       setResult(data);
       onResult?.({ ...data, timestamp: Date.now(), mode: 'single' });
     } catch (e) {
@@ -71,8 +72,9 @@ export default function URLAnalyzer({ modelsReady, onResult }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ urls, condition }),
       });
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || "Batch prediction failed");
+      let data = {};
+      try { data = await resp.json(); } catch {}
+      if (!resp.ok) throw new Error(data?.error || `Server error (${resp.status})`);
       setBatchResults(data);
       onResult?.({ ...data, timestamp: Date.now(), mode: 'batch' });
     } catch (e) {

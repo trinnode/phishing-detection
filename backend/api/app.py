@@ -36,7 +36,7 @@ TRAINING_STATUS = {'running': False, 'done': False, 'error': None, 'log': []}
 
 @app.route('/api/health', methods=['GET'])
 def health():
-    return jsonify({'status': 'ok', 'service': 'shikibetsu-phishing-detection-api'})
+    return jsonify({'status': 'ok', 'service': 'markup-phishing-detection-api'})
 
 
 # ── Prediction ─────────────────────────────────────────────────────────────────
@@ -102,22 +102,31 @@ def _run_training_job(fast_mode: bool, data_dir: str = None):
     global TRAINING_STATUS
     try:
         TRAINING_STATUS['running'] = True
-        TRAINING_STATUS['log'] = ['Starting feature extraction...']
+        TRAINING_STATUS['log'] = ['[1/7] Phase 1: Dataset Acquisition — loading or generating dataset...']
 
         df_lex, df_struct, df_combined, y = prepare_datasets_from_real_data(data_dir)
-        TRAINING_STATUS['log'].append(f'Dataset ready: {len(y)} samples')
+        phishing_count = int(sum(y == 1))
+        legit_count = int(sum(y == 0))
+        TRAINING_STATUS['log'].append(
+            f'[2/7] Dataset ready: {len(y)} samples '
+            f'(Phishing: {phishing_count}, Legitimate: {legit_count})'
+        )
+        TRAINING_STATUS['log'].append(f'[3/7] Phase 2: Feature Extraction — lexical ({df_lex.shape[1]}), structural ({df_struct.shape[1]}), combined ({df_combined.shape[1]})')
+        TRAINING_STATUS['log'].append(f'[4/7] Phase 3-4: Preprocessing & Nested CV — 80/20 split, MinMax scaling, SMOTE, 10-fold outer / 5-fold inner GridSearchCV')
 
-        TRAINING_STATUS['log'].append('Running 6 experimental conditions...')
-        results = run_all_conditions(df_lex, df_struct, df_combined, y, fast_mode=fast_mode)
+        TRAINING_STATUS['log'].append('[5/7] Phase 5: Running 6 experimental conditions (C1–C6)...')
+        results = run_all_conditions(df_lex, df_struct, df_combined, y, fast_mode=fast_mode, status=TRAINING_STATUS)
 
         TRAINING_STATUS['done'] = True
         TRAINING_STATUS['running'] = False
         TRAINING_STATUS['results'] = results
-        TRAINING_STATUS['log'].append('Training complete!')
+        TRAINING_STATUS['log'].append('[7/7] ✓ Training complete! All 6 conditions trained, evaluated, and persisted.')
     except Exception as e:
+        import traceback
         TRAINING_STATUS['error'] = str(e)
         TRAINING_STATUS['running'] = False
-        TRAINING_STATUS['log'].append(f'Error: {e}')
+        TRAINING_STATUS['log'].append(f'[ERROR] {e}')
+        TRAINING_STATUS['log'].append(traceback.format_exc())
 
 
 @app.route('/api/train', methods=['POST'])

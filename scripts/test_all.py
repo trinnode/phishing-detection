@@ -45,7 +45,7 @@ def check(resp, status=200):
 def main():
     global passed, failed
     print('=' * 60)
-    print('SHIKIBETSU COMPREHENSIVE TEST SUITE')
+    print('MARKUP COMPREHENSIVE TEST SUITE')
     print('=' * 60)
 
     # ── 1. Health ────────────────────────────────────────────────────────────
@@ -54,8 +54,8 @@ def main():
         check(r)
         d = r.json()
         assert d['status'] == 'ok'
-        assert 'shikibetsu' in d['service']
-    test('Health check endpoint returns shikibetsu service name', test_health)
+        assert 'markup' in d['service']
+    test('Health check endpoint returns markup service name', test_health)
 
     # ── 2. Model status ──────────────────────────────────────────────────────
     def test_model_status():
@@ -441,8 +441,8 @@ def main():
         index = build_dir / 'index.html'
         assert index.exists(), 'index.html missing from build output'
         content = index.read_text()
-        assert 'Shikibetsu' in content, 'index.html does not reference Shikibetsu'
-    test('Frontend build output contains Shikibetsu branding', test_frontend_build_output)
+        assert 'MARKup' in content, 'index.html does not reference MARKup'
+    test('Frontend build output contains MARKup branding', test_frontend_build_output)
 
     # ── Summary ──────────────────────────────────────────────────────────────
     print()

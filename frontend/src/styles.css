@@ -106,6 +106,93 @@ button {
   background: rgba(108, 122, 224, 0.3);
 }
 
+.appShell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+
+.appHeader {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.headerInner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.logoImg {
+  height: 36px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.titleBlock h1 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.titleBlock p {
+  font-size: 0.68rem;
+  color: var(--text-tertiary);
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+.headerStatus {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.badge {
+  font-size: 0.7rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 100px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.badgeReady {
+  background: rgba(80, 184, 122, 0.12);
+  color: #7ddaa3;
+  border: 1px solid rgba(80, 184, 122, 0.2);
+}
+
+.badgeNotReady {
+  background: rgba(224, 89, 91, 0.08);
+  color: #f0a1a2;
+  border: 1px solid rgba(224, 89, 91, 0.15);
+}
+
 /* HEADER */
 
 .header {
@@ -220,16 +307,16 @@ button {
 }
 
 .navItem {
-  padding: 0.55rem 1rem;
-  font-size: 0.78rem;
+  padding: 0.65rem 1.2rem;
+  font-size: 0.82rem;
   color: var(--text-tertiary);
+  background: none;
+  border: none;
   border-bottom: 2px solid transparent;
   transition: all var(--transition-fast);
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
+  cursor: pointer;
   white-space: nowrap;
 }
 

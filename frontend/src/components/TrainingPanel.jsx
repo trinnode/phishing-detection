@@ -79,9 +79,10 @@ export default function TrainingPanel({ onTrainingComplete }) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ url: urls[i], condition: "C6" }),
           });
-          const d = await resp.json();
+          let d = {};
+          try { d = await resp.json(); } catch {}
           if (resp.ok) successes.push({ url: urls[i], result: d });
-          else failures.push({ url: urls[i], error: d.error || "Prediction failed" });
+          else failures.push({ url: urls[i], error: d?.error || `Server error (${resp.status})` });
         } catch (e) {
           failures.push({ url: urls[i], error: e.message });
         }
@@ -94,7 +95,7 @@ export default function TrainingPanel({ onTrainingComplete }) {
     const payload = { fast_mode: fastMode };
     if (dataDir.trim()) payload.data_dir = dataDir.trim();
 
-    setStatus(prev => ({ ...prev, training: { running: true, log: [] } }));
+    setStatus(prev => ({ ...prev, training: { running: true, done: false, error: null, log: ["⏳ Initiating training request..."] } }));
     setCurrentPhase("Initialising training pipeline...");
     setConditionProgress({});
 
@@ -104,15 +105,16 @@ export default function TrainingPanel({ onTrainingComplete }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!resp.ok) {
-        const errData = await resp.json().catch(() => ({}));
-        throw new Error(errData.error || `Server responded with ${resp.status}`);
-      }
+      let errData = {};
+      try { errData = await resp.json(); } catch {}
+      if (!resp.ok) throw new Error(errData?.error || `Server responded with ${resp.status}`);
       setPolling(true);
       pollRef.current = setInterval(async () => {
         try {
           const r = await fetch(`${API_BASE}/api/train/status`);
-          const d = await r.json();
+          let d = {};
+          try { d = await r.json(); } catch {}
+          if (!r.ok) throw new Error(`Status poll failed (${r.status})`);
           setStatus(prev => ({ ...prev, training: d }));
           if (d.log && d.log.length > 0) {
             const lastEntry = d.log[d.log.length - 1];
@@ -349,7 +351,12 @@ export default function TrainingPanel({ onTrainingComplete }) {
               ))
             ) : (
               <p style={{ margin: 0, padding: "8px", fontSize: "0.72rem", color: "#475569", fontFamily: "inherit" }}>
-                {trainingState.running ? "Waiting for log output..." : "No log entries."}
+                {trainingState.running ? "⏳ Preparing training pipeline..." : "No log entries."}
+              </p>
+            )}
+            {polling && trainingState.running && (
+              <p style={{ margin: 0, padding: "4px 8px", fontSize: "0.65rem", color: "#475569", fontFamily: "inherit", borderTop: "1px solid #1e2235", fontStyle: "italic" }}>
+                Training in progress — logs update every 1.5s
               </p>
             )}
           </div>
