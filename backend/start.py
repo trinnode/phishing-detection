@@ -1,9 +1,11 @@
 """
-Startup script: auto-trains models if needed, then launches gunicorn.
+Startup script: launches gunicorn immediately, then triggers auto-training
+in background if no models exist. This lets Railway healthchecks pass right away.
 """
 import os
 import sys
-import subprocess
+import time
+import threading
 from pathlib import Path
 
 MODELS_DIR = Path(__file__).parent / 'models' / 'saved'
@@ -12,32 +14,37 @@ C6_PATH = MODELS_DIR / 'C6.pkl'
 def needs_training():
     return not C6_PATH.exists()
 
-def run_training():
-    """Run training synchronously before starting the server."""
-    sys.path.insert(0, str(Path(__file__).parent))
-    from core.dataset_loader import prepare_datasets_from_real_data
-    from core.trainer import run_all_conditions
-
-    print("[startup] No trained models found. Auto-training with synthetic dataset...")
-    print("[startup] Step 1/3: Preparing dataset...")
-    df_lex, df_struct, df_combined, y = prepare_datasets_from_real_data()
-    print(f"[startup] Dataset ready: {len(y)} samples")
-
-    print("[startup] Step 2/3: Training all 6 conditions (C1–C6)...")
-    results = run_all_conditions(df_lex, df_struct, df_combined, y, fast_mode=True)
-
-    print("[startup] Step 3/3: Training complete!")
-    c6 = results.get('conditions', {}).get('C6', {})
-    print(f"[startup] C6 (Combined XGBoost) — F1: {c6.get('f1_score', 'N/A'):.4f}, AUC: {c6.get('auc_roc', 'N/A'):.4f}")
-    print("[startup] Models saved to backend/models/saved/")
+def trigger_auto_train():
+    """Wait for gunicorn to be ready, then POST /api/train."""
+    time.sleep(3)
+    import urllib.request
+    port = os.environ.get('PORT', '5000')
+    for attempt in range(30):
+        try:
+            req = urllib.request.Request(
+                f'http://127.0.0.1:{port}/api/train',
+                data=b'{"fast_mode": true}',
+                headers={'Content-Type': 'application/json'},
+                method='POST',
+            )
+            resp = urllib.request.urlopen(req, timeout=5)
+            print(f"[startup] Auto-training triggered (status {resp.status})")
+            return
+        except Exception as e:
+            if attempt == 0:
+                print(f"[startup] Waiting for gunicorn to start... ({e})")
+            time.sleep(2)
+    print("[startup] Could not reach gunicorn to trigger training.")
 
 if __name__ == '__main__':
     if needs_training():
-        run_training()
+        print("[startup] No trained models found. Will auto-train in background after gunicorn starts.")
+        t = threading.Thread(target=trigger_auto_train, daemon=True)
+        t.start()
     else:
         print("[startup] Models already trained.")
 
-    # Launch gunicorn
+    # Launch gunicorn (this replaces the process)
     port = os.environ.get('PORT', '5000')
     cmd = [
         'gunicorn',
