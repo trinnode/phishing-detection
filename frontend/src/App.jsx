@@ -4,11 +4,15 @@ import ResultsDashboard from "./components/ResultsDashboard";
 import TrainingPanel from "./components/TrainingPanel";
 import FeatureExplorer from "./components/FeatureExplorer";
 
-const API_BASE = import.meta.env.VITE_API_URL || (
+const RAW_API_BASE = import.meta.env.VITE_API_URL || (
   window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
     ? 'https://phishing-detection-backend.up.railway.app'
     : 'http://localhost:5000'
 );
+// Ensure protocol prefix is present (env var set via vercel.json or dashboard may omit it)
+const API_BASE = RAW_API_BASE.startsWith('http://') || RAW_API_BASE.startsWith('https://')
+  ? RAW_API_BASE
+  : 'https://' + RAW_API_BASE;
 
 export { API_BASE };
 
