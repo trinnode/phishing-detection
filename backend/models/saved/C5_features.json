@@ -1,1 +1,0 @@
-["domain_age_days", "domain_expiry_days", "whois_available", "dns_ttl_value", "has_mx_record", "has_spf_record", "dns_resolves", "ns_count", "ssl_valid", "ssl_days_remaining", "ip_in_blacklist_asn", "registrar_entropy", "country_code_risk", "nameserver_diversity"]

@@ -12,8 +12,10 @@ Endpoints:
 
 import os
 import json
+import uuid
 import threading
 from pathlib import Path
+from werkzeug.utils import secure_filename
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -155,6 +157,40 @@ def train():
 @app.route('/api/train/status', methods=['GET'])
 def train_status():
     return jsonify(TRAINING_STATUS)
+
+
+# ── Dataset upload ─────────────────────────────────────────────────────────────
+
+UPLOAD_DIR = Path(__file__).parent.parent / 'uploads'
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+@app.route('/api/dataset/upload', methods=['POST'])
+def dataset_upload():
+    """Accept CSV/TXT file uploads for training datasets."""
+    if 'files' not in request.files and 'file' not in request.files:
+        return jsonify({'error': 'No file provided. Use field name "files" or "file".'}), 400
+
+    files = request.files.getlist('files') or [request.files['file']]
+    saved = []
+    for f in files:
+        if f.filename == '':
+            continue
+        ext = Path(f.filename).suffix.lower()
+        if ext not in ('.csv', '.txt'):
+            continue
+        unique_name = f"{uuid.uuid4().hex}_{secure_filename(f.filename)}"
+        dest = UPLOAD_DIR / unique_name
+        f.save(str(dest))
+        saved.append(str(dest))
+
+    if not saved:
+        return jsonify({'error': 'No valid CSV/TXT files received.'}), 400
+
+    return jsonify({
+        'message': f'{len(saved)} file(s) uploaded successfully.',
+        'data_dir': str(UPLOAD_DIR),
+        'files': saved,
+    })
 
 
 # ── Results ────────────────────────────────────────────────────────────────────

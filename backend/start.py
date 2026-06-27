@@ -1,11 +1,14 @@
 """
-Startup script: launches gunicorn immediately, then triggers auto-training
-in background if no models exist. This lets Railway healthchecks pass right away.
+Startup script: launches gunicorn as a child process, then triggers
+auto-training in background if no models exist.
+Using subprocess (not execvp) so the parent stays alive to manage training.
 """
 import os
 import sys
 import time
+import signal
 import threading
+import subprocess
 from pathlib import Path
 
 MODELS_DIR = Path(__file__).parent / 'models' / 'saved'
@@ -14,11 +17,9 @@ C6_PATH = MODELS_DIR / 'C6.pkl'
 def needs_training():
     return not C6_PATH.exists()
 
-def trigger_auto_train():
+def trigger_auto_train(port):
     """Wait for gunicorn to be ready, then POST /api/train."""
-    time.sleep(3)
     import urllib.request
-    port = os.environ.get('PORT', '5000')
     for attempt in range(30):
         try:
             req = urllib.request.Request(
@@ -32,20 +33,14 @@ def trigger_auto_train():
             return
         except Exception as e:
             if attempt == 0:
-                print(f"[startup] Waiting for gunicorn to start... ({e})")
+                print(f"[startup] Waiting for gunicorn... ({e})")
             time.sleep(2)
     print("[startup] Could not reach gunicorn to trigger training.")
 
 if __name__ == '__main__':
-    if needs_training():
-        print("[startup] No trained models found. Will auto-train in background after gunicorn starts.")
-        t = threading.Thread(target=trigger_auto_train, daemon=True)
-        t.start()
-    else:
-        print("[startup] Models already trained.")
-
-    # Launch gunicorn (this replaces the process)
     port = os.environ.get('PORT', '5000')
+
+    # Start gunicorn as a subprocess (not exec, so parent stays alive)
     cmd = [
         'gunicorn',
         '--bind', f'0.0.0.0:{port}',
@@ -53,4 +48,23 @@ if __name__ == '__main__':
         '--timeout', '300',
         'api.app:app',
     ]
-    os.execvp('gunicorn', cmd)
+    proc = subprocess.Popen(cmd)
+
+    if needs_training():
+        print("[startup] No trained models found. Auto-training in background after gunicorn starts.")
+        t = threading.Thread(target=trigger_auto_train, args=(port,), daemon=True)
+        t.start()
+    else:
+        print("[startup] Models already trained.")
+
+    # Forward signals to gunicorn and wait
+    def sig_handler(signum, frame):
+        proc.send_signal(signum)
+    signal.signal(signal.SIGTERM, sig_handler)
+    signal.signal(signal.SIGINT, sig_handler)
+
+    try:
+        proc.wait()
+    except KeyboardInterrupt:
+        proc.terminate()
+        proc.wait()
