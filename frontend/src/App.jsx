@@ -6,7 +6,7 @@ import FeatureExplorer from "./components/FeatureExplorer";
 
 const RAW_API_BASE = import.meta.env.VITE_API_URL || (
   window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
-    ? 'https://phishing-detection-backend.up.railway.app'
+    ? 'https://markup-phishing-detection.fly.dev'
     : 'http://localhost:5000'
 );
 // Ensure protocol prefix is present (env var set via vercel.json or dashboard may omit it)

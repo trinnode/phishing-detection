@@ -41,10 +41,12 @@ if __name__ == '__main__':
     port = os.environ.get('PORT', '5000')
 
     # Start gunicorn as a subprocess (not exec, so parent stays alive)
+    # Worker count is configurable to fit constrained machines (Fly/Render free tiers)
+    # Fewer workers free RAM for the background auto-training.
     cmd = [
         'gunicorn',
         '--bind', f'0.0.0.0:{port}',
-        '--workers', '2',
+        '--workers', os.environ.get('GUNICORN_WORKERS', '1'),
         '--timeout', '300',
         'api.app:app',
     ]

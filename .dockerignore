@@ -1,0 +1,23 @@
+# Keep Docker build context small (backend Dockerfile only COPYs backend/)
+.git
+venv
+.venv
+data
+uploads
+backend/uploads
+backend/models/saved
+backend/models/trained
+backend/results
+backend/cache
+**/__pycache__
+**/*.pyc
+frontend/node_modules
+frontend/dist
+.env
+cix.docx
+continuation.md
+*.md
+scripts
+README.md
+Procfile
+train.py
