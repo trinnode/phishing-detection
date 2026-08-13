@@ -15,11 +15,13 @@ import pandas as pd
 from .lexical_extractor import extract_lexical_features, LEXICAL_FEATURE_NAMES
 from .structural_extractor import extract_structural_features, STRUCTURAL_FEATURE_NAMES
 from .pipeline_combiner import assemble_combined_vector
+from .paths import data_root
 
 warnings.filterwarnings('ignore')
 
-MODELS_DIR = Path(__file__).parent.parent / 'models' / 'saved'
-RESULTS_DIR = Path(__file__).parent.parent / 'results'
+_DATA_ROOT = data_root()
+MODELS_DIR = _DATA_ROOT / 'models' / 'saved'
+RESULTS_DIR = _DATA_ROOT / 'results'
 
 # Condition → (pipeline, classifier)
 CONDITION_MAP = {
