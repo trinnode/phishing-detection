@@ -1,0 +1,37 @@
+name: Fly Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: fly-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy backend to Fly.io
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Ensure persistent volume exists
+        run: |
+          APP="markup-phishing-detection"
+          if flyctl volumes list -a "$APP" --json | grep -q '"name": "markup_data"'; then
+            echo "Volume markup_data already exists."
+          else
+            echo "Volume markup_data not found - creating it in region cdg..."
+            flyctl volumes create markup_data -a "$APP" --region cdg --size 1 --yes
+          fi
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Deploy to Fly.io
+        run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_APP: markup-phishing-detection

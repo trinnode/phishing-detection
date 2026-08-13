@@ -11,7 +11,7 @@ import threading
 import subprocess
 from pathlib import Path
 
-MODELS_DIR = Path(__file__).parent / 'models' / 'saved'
+MODELS_DIR = Path(os.environ.get('MARKUP_DATA_DIR', str(Path(__file__).parent))) / 'models' / 'saved'
 C6_PATH = MODELS_DIR / 'C6.pkl'
 
 def needs_training():

@@ -27,6 +27,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from core.predictor import predict, predict_batch, load_experiment_results, models_available
 from core.dataset_loader import prepare_datasets_from_real_data
 from core.trainer import run_all_conditions
+from core.paths import data_root
 
 app = Flask(__name__)
 CORS(app)
@@ -161,7 +162,7 @@ def train_status():
 
 # ── Dataset upload ─────────────────────────────────────────────────────────────
 
-UPLOAD_DIR = Path(__file__).parent.parent / 'uploads'
+UPLOAD_DIR = data_root() / 'uploads'
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 @app.route('/api/dataset/upload', methods=['POST'])

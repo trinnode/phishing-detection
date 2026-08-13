@@ -1,7 +1,7 @@
 # fly.toml — MARKup phishing detection backend on Fly.io
 # Replaces Railway as the backend host. Build context = repo root (matches Railway).
 app = "markup-phishing-detection"
-primary_region = "mad"
+primary_region = "cdg"
 
 [build]
   dockerfile = "backend/Dockerfile"
@@ -9,6 +9,8 @@ primary_region = "mad"
 [env]
   PORT = "8080"
   FLASK_ENV = "production"
+  MARKUP_DATA_DIR = "/app/var"
+  GUNICORN_WORKERS = "1"
 
 # ── HTTP service (gunicorn on :8080) ────────────────────────────────────────
 [http_service]
@@ -47,15 +49,8 @@ primary_region = "mad"
   cpu_kind = "shared"
   memory = "1gb"
 
-# ── Persistent volumes (models + results survive redeploys) ─────────────────
+# ── Persistent storage (single volume: Fly Machines allow only 1 per machine) ─
+# Everything under MARKUP_DATA_DIR (/app/var) survives redeploys.
 [[mounts]]
-  source = "markup_models"
-  destination = "/app/models"
-
-[[mounts]]
-  source = "markup_results"
-  destination = "/app/results"
-
-[[mounts]]
-  source = "markup_uploads"
-  destination = "/app/uploads"
+  source = "markup_data"
+  destination = "/app/var"

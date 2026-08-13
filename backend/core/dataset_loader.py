@@ -18,8 +18,9 @@ import pandas as pd
 from .lexical_extractor import extract_lexical_features
 from .structural_extractor import _offline_defaults
 from .pipeline_combiner import apply_correlation_reduction
+from .paths import data_root
 
-DATA_DIR = Path(__file__).parent.parent.parent / 'data'
+DATA_DIR = data_root() / 'data'
 
 
 # ── Real dataset loaders ───────────────────────────────────────────────────────

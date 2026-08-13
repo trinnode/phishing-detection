@@ -31,7 +31,9 @@ except ImportError:
 
 
 # ── Cache layer (file-based offline/sandbox mode) ─────────────────────────────
-CACHE_DIR = Path(__file__).parent.parent / 'cache' / 'structural'
+from .paths import data_root
+
+CACHE_DIR = data_root() / 'cache' / 'structural'
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 

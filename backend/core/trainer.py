@@ -31,12 +31,15 @@ from imblearn.over_sampling import SMOTE
 from xgboost import XGBClassifier
 from statsmodels.stats.contingency_tables import mcnemar
 
+from .paths import data_root
+
 warnings.filterwarnings('ignore')
 
-MODELS_DIR = Path(__file__).parent.parent / 'models' / 'saved'
+_DATA_ROOT = data_root()
+MODELS_DIR = _DATA_ROOT / 'models' / 'saved'
 MODELS_DIR.mkdir(parents=True, exist_ok=True)
 
-RESULTS_DIR = Path(__file__).parent.parent / 'results'
+RESULTS_DIR = _DATA_ROOT / 'results'
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
 
